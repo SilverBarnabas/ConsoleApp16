@@ -1,33 +1,116 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace ConsoleApp16
+namespace notepad
 {
     class Program
     {
         static void Main(string[] args)
         {
-            var paljuTooteid = new List<Toode>();
-            var toode1 = new Toode() { Nimi = "Banaan", Hind = "12" };
-            var toode2 = new Toode() { Nimi = "Leib", Hind = "14" };
-            var toode3 = new Toode() { Nimi = "Sai", Hind = "16" };
-            var toode4 = new Toode() { Nimi = "Mahl", Hind = "17" };
-            var toode5 = new Toode() { Nimi = "Liha", Hind = "77" };
+            InitializeXML();
+            OptionsMenu();
+        }
 
-            paljuTooteid.Add(toode1);
-            paljuTooteid.Add(toode2);
-            paljuTooteid.Add(toode3);
-            paljuTooteid.Add(toode4);
-            paljuTooteid.Add(toode5);
-
-            var serializer = new XmlSerializer(paljuTooteid.GetType());
-            using(var writer = XmlWriter.Create("tooted.xml"))
+        static void InitializeXML()
+        {
+            if (!System.IO.File.Exists("notes.xml"))
             {
-                serializer.Serialize(writer, paljuTooteid);
+                XmlWriter xmlWriter = XmlWriter.Create("notes.xml");
+                xmlWriter.WriteStartDocument();
+
+                xmlWriter.WriteStartElement("notes");
+
+                xmlWriter.Close();
+            }
+        }
+
+        static void ListNotes()
+        {
+            Console.Clear();
+
+            XmlDocument doc = new XmlDocument();
+            doc.Load("notes.xml");
+            var rootNode = doc.DocumentElement;
+
+            if (rootNode.ChildNodes.Count == 0)
+            {
+                Console.WriteLine("Pole märkmeid\n");
+                return;
             }
 
+            for (int i = 0; i < rootNode.ChildNodes.Count; i++)
+                Console.WriteLine((i + 1) + ". " + rootNode.ChildNodes[i].Attributes["name"].Value);
+
+            int userOption = Int32.Parse(Console.ReadLine());
+
+            if (!(userOption > 0 && userOption <= rootNode.ChildNodes.Count))
+            {
+                Console.Clear();
+                return;
+            }
+
+            Console.Clear();
+
+            Console.WriteLine(rootNode.ChildNodes[userOption - 1].Attributes["text"].Value);
+            Console.WriteLine();
+        }
+
+        static void WriteNote()
+        {
+            Console.Clear();
+            Console.WriteLine("Pealkiri:");
+            string Name = Console.ReadLine();
+            Console.WriteLine("Tekst:");
+            string Text = Console.ReadLine();
+
+            XmlDocument doc = new XmlDocument();
+            doc.Load("notes.xml");
+            XmlElement newNote = doc.CreateElement("note");
+            newNote.SetAttribute("name", Name);
+            newNote.SetAttribute("text", Text);
+
+            XmlNode rootNode = doc.DocumentElement;
+            rootNode.AppendChild(newNote);
+
+            doc.Save("notes.xml");
+
+            Console.Clear();
+            Console.WriteLine("Märge loodud\n");
+        }
+
+        static void OptionsMenu()
+        {
+            Console.Clear();
+
+            while (true)
+            {
+                Console.WriteLine("1. Loe märkmeid");
+                Console.WriteLine("2. Kirjuta märge");
+                Console.WriteLine("3. Välju");
+
+                string userInput = Console.ReadLine();
+
+                switch (userInput)
+                {
+                    case "1":
+                        ListNotes();
+                        break;
+                    case "2":
+                        WriteNote();
+                        break;
+                    case "3":
+                        return;
+                    default:
+                        Console.WriteLine("Tundmatu käsk");
+                        break;
+                }
+
+            }
         }
     }
 }
