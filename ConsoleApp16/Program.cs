@@ -5,110 +5,75 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
+using System.IO;
 
-namespace notepad
+namespace XMLmarkmik
 {
     class Program
     {
         static void Main(string[] args)
         {
-            InitializeXML();
-            OptionsMenu();
-        }
-
-        static void InitializeXML()
-        {
-            if (!System.IO.File.Exists("txt.xml"))
-            {
-                XmlWriter xmlWriter = XmlWriter.Create("txt.xml");
-                xmlWriter.WriteStartDocument();
-                xmlWriter.WriteStartElement("txt");
-                xmlWriter.Close();
-            }
-        }
-        static void OptionsMenu()
-        {
-            Console.Clear();
-
             while (true)
             {
-                Console.WriteLine("1. Loe märkmeid");
-                Console.WriteLine("2. Kirjuta märge");
-                Console.WriteLine("3. Välju");
 
-                string userInput = Console.ReadLine();
+                Console.WriteLine("Mida soovite teha?\n1.Kirjutada märge.\n2.Lugeda märkmeid.\n3.Kustuta kõik");
+                string valik = Console.ReadLine();
+                var märkmed = new List<Märge>();
 
-                switch (userInput)
+                switch (valik)
                 {
                     case "1":
-                        ListNotes();
+                        Console.WriteLine("Sisestage märke pealkiri: ");
+                        string pealkiri = Console.ReadLine();
+                        Console.WriteLine("Sisestage märke sisu: ");
+                        string sisu = Console.ReadLine();
+                        if (!File.Exists("txt.xml"))
+                        {
+                            var märge = new Märge() { Pealkiri = pealkiri, Sisu = sisu };
+                            märkmed.Add(märge);
+                            var serializer1 = new XmlSerializer(märkmed.GetType());
+                            using (var writer = XmlWriter.Create("txt.xml"))
+                            {
+                                serializer1.Serialize(writer, märkmed);
+                            }
+                        }
+                        else
+                        {
+                            var serializer2 = new XmlSerializer(typeof(List<Märge>));
+                            using (var reader = XmlReader.Create("txt.xml"))
+                            {
+                                märkmed = (List<Märge>)serializer2.Deserialize(reader);
+                            }
+                            var uusmärge = new Märge() { Pealkiri = pealkiri, Sisu = sisu };
+                            märkmed.Add(uusmärge);
+
+                            using (var writer = XmlWriter.Create("txt.xml"))
+                            {
+                                serializer2.Serialize(writer, märkmed);
+                            }
+                        }
+                        Console.WriteLine();
                         break;
                     case "2":
-                        WriteNote();
+                        var serializer = new XmlSerializer(typeof(List<Märge>));
+                        using (var reader = XmlReader.Create("txt.xml"))
+                        {
+                            märkmed = (List<Märge>)serializer.Deserialize(reader);
+                        }
+                        foreach (var märge in märkmed)
+                        {
+                            Console.WriteLine("Pealkiri: {0}, Sisu: {1}", märge.Pealkiri, märge.Sisu);
+                        }
+                        Console.WriteLine();
                         break;
                     case "3":
-                        return;
+                        File.Delete("txt.xml");
+                        Console.WriteLine();
+                        break;
                     default:
-                        Console.WriteLine("Tundmatu käsk");
                         break;
                 }
-
             }
         }
-        static void ListNotes()
-        {
-            Console.Clear();
-
-            XmlDocument doc = new XmlDocument();
-            doc.Load("txt.xml");
-            var rootNode = doc.DocumentElement;
-
-            if (rootNode.ChildNodes.Count == 0)
-            {
-                Console.WriteLine("Märkmed puuduvad\n");
-                return;
-            }
-
-            for (int i = 0; i < rootNode.ChildNodes.Count; i++)
-                Console.WriteLine((i + 1) + ". " + rootNode.ChildNodes[i].Attributes["Pealkiri"].Value);
-
-            int userOption = Int32.Parse(Console.ReadLine());
-
-            if (!(userOption > 0 && userOption <= rootNode.ChildNodes.Count))
-            {
-                Console.Clear();
-                return;
-            }
-
-            Console.Clear();
-
-            Console.WriteLine(rootNode.ChildNodes[userOption - 1].Attributes["text"].Value);
-            Console.WriteLine();
-        }
-
-        static void WriteNote()
-        {
-            Console.Clear();
-            Console.WriteLine("Pealkiri:");
-            string Pealkiri = Console.ReadLine();
-            Console.WriteLine("Tekst:");
-            string Text = Console.ReadLine();
-
-            XmlDocument doc = new XmlDocument();
-            doc.Load("txt.xml");
-            XmlElement newNote = doc.CreateElement("note");
-            newNote.SetAttribute("Pealkiri", Pealkiri);
-            newNote.SetAttribute("text", Text);
-
-            XmlNode rootNode = doc.DocumentElement;
-            rootNode.AppendChild(newNote);
-
-            doc.Save("txt.xml");
-
-            Console.Clear();
-            Console.WriteLine("Märge loodud\n");
-        }
-
-        
     }
 }

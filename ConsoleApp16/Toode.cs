@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ConsoleApp16
+namespace XMLmarkmik
 {
-    class Toode
+    class Märge
     {
-        public string Nimi { get; set; }
-        public string Hind { get; set; }
+        public string Pealkiri { get; set; }
+        public string Sisu { get; set; }
 
     }
 }
