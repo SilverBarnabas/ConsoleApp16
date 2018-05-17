@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace XMLmarkmik
 {
-    class Märge
+    public class Märge
     {
         public string Pealkiri { get; set; }
         public string Sisu { get; set; }
