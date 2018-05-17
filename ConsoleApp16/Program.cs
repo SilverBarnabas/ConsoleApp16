@@ -68,6 +68,7 @@ namespace XMLmarkmik
                         break;
                     case "3":
                         File.Delete("txt.xml");
+                        Console.WriteLine("Kustutatud!");
                         Console.WriteLine();
                         break;
                     default:
