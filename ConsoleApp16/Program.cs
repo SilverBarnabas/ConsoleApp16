@@ -55,21 +55,30 @@ namespace XMLmarkmik
                         Console.WriteLine();
                         break;
                     case "2":
-                        var serializer = new XmlSerializer(typeof(List<Märge>));
-                        using (var reader = XmlReader.Create("txt.xml"))
+                        if (!File.Exists("txt.xml"))
                         {
-                            märkmed = (List<Märge>)serializer.Deserialize(reader);
+                            Console.WriteLine("Sisu puudub.");
                         }
-                        foreach (var märge in märkmed)
+                        else
                         {
-                            Console.WriteLine("Pealkiri: {0}, Sisu: {1}", märge.Pealkiri, märge.Sisu);
+                            var serializer = new XmlSerializer(typeof(List<Märge>));
+
+                            using (var reader = XmlReader.Create("txt.xml"))
+                            {
+                                märkmed = (List<Märge>)serializer.Deserialize(reader);
+                            }
+                            foreach (var märge in märkmed)
+                            {
+                                Console.WriteLine("Pealkiri: {0}, Sisu: {1}", märge.Pealkiri, märge.Sisu);
+                            }
                         }
+                        
                         Console.WriteLine();
                         break;
                     case "3":
                         File.Delete("txt.xml");
+                        
                         Console.WriteLine("Kustutatud!");
-                        Console.WriteLine();
                         break;
                     default:
                         break;
